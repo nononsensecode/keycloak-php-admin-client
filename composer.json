@@ -2,9 +2,14 @@
     "name": "nononsensecode/keycloak-php-admin-client",
     "description": "PHP admin api client to manipulate client CRUD operations",
     "type": "library",
+    "version": "0.0.1",
     "license": "MIT",
     "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {"nononsensecode\\KeyCloakAdminClient\\": "src/"}
+    },
     "require": {
-        "guzzlehttp/guzzle": "7.2.0"
+        "guzzlehttp/guzzle": "7.2.0",
+        "vlucas/phpdotenv": "v5.2.0"
     }
 }
