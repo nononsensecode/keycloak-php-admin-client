@@ -1,0 +1,10 @@
+{
+    "name": "nononsensecode/keycloak-php-admin-client",
+    "description": "PHP admin api client to manipulate client CRUD operations",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "7.2.0"
+    }
+}

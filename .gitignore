@@ -1,0 +1,5 @@
+# We don't need vendor directory
+vendor
+
+# Also composer.phar
+composer.phar
