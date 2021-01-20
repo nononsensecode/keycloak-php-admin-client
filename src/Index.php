@@ -1,6 +1,6 @@
 <?php
 
-namespace KeyCloakAdminClient;
+namespace nononsensecode\KeyCloakAdminClient;
 
 class Index
 {
