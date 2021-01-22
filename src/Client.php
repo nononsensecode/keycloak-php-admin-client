@@ -73,6 +73,21 @@ class Client
         }
     }
 
+    public function addRoles($id, $roles)
+    {
+
+    }
+
+    public function setRoles($id, $roles)
+    {
+
+    }
+
+    public function removeRoles($id, $roles)
+    {
+
+    }
+
     private function getAccessToken(): AccessToken
     {
         $grantType = 'client_credentials';
