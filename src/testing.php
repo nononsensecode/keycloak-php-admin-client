@@ -11,13 +11,15 @@ $dotenv->load();
 
 $client = new Client();
 
-$representation = ClientRepresentation::createBuilder()
-    ->clientId("test-one-more-client")->build();
+// $representation = ClientRepresentation::createBuilder()
+//     ->clientId("test-one-more-client")->build();
 
-$id = $client->createClient($representation);
+// $id = $client->createClient($representation);
 
-$representation->defaultRoles = [
-    'hero', 'villan'
-];
+// $representation->defaultRoles = [
+//     'hero', 'villan'
+// ];
 
-$client->updateClient($id, $representation);
+$client->addRoles('f03e4bd8-bae6-4fc5-82ee-81763d5bf4a1', [
+    'admin', 'user'
+]);

@@ -75,7 +75,19 @@ class Client
 
     public function addRoles($id, $roles)
     {
-
+        $updateUri = $this->getClientManagementUri() . "/{$id}";
+        $headers = [
+            'Authorization' => "Bearer {$this->getAccessToken()}"
+        ];
+        $updatedResponse = $this->http->put($updateUri, [
+            'headers' => $headers,
+            'json' => [
+                'defaultRoles' => $roles
+            ]
+        ]);
+        if ($updatedResponse->getStatusCode() !== 204) {
+            throw new RuntimeException("Roles not added");
+        }
     }
 
     public function setRoles($id, $roles)
