@@ -13,7 +13,7 @@ class ClientRepresentation
     public ?string $baseUrl;
     public ?bool $bearerOnly;
     public ?string $clientAuthenticatorType;
-    public ?string $clientId;
+    public string $clientId;
     public ?bool $consentRequired;
     public $defaultClientScopes;
     public $defaultRoles;

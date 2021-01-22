@@ -12,6 +12,6 @@ $dotenv->load();
 $client = new Client();
 
 $representation = ClientRepresentation::createBuilder()
-    ->name("test-php-client")->build();
+    ->clientId("test-one-more-client")->build();
 
 $client->createClient($representation);
