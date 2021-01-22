@@ -29,7 +29,7 @@ class Client
         $this->realmManagementClientId = $_ENV['KEYCLOAK_REALM_MANAGEMENT_CLIENT_ID'];
     }
 
-    public function createClient(ClientRepresentation $representation)
+    public function createClient(ClientRepresentation $representation): ?string
     {
         $jsonString = $this->getJsonString($representation);
         $headers = [
@@ -45,6 +45,31 @@ class Client
             throw new RuntimeException("Client not created!");
         } else {
             echo "Client created successfully";
+        }
+
+        if (!empty($response->getHeader('Location'))) {
+            $location = $response->getHeader('Location')[0];
+            return basename($location);        
+        } else {
+            return null;
+        }
+    }
+
+    public function updateClient(string $id, ClientRepresentation $representation)
+    {
+        $updateUri = $this->getClientManagementUri() . "/{$id}";
+        $jsonString = $this->getJsonString($representation);
+        $headers = [
+            'Content-Type' => 'application/json',
+            'Authorization' => "Bearer {$this->getAccessToken()}"
+        ];
+        $updateResponse = $this->http->put($updateUri, [
+            'body' => $jsonString,
+            'headers' => $headers
+        ]);
+        if ($updateResponse->getStatusCode() !== 204)
+        {
+            throw new RuntimeException("Client not updated");
         }
     }
 

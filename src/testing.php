@@ -14,4 +14,10 @@ $client = new Client();
 $representation = ClientRepresentation::createBuilder()
     ->clientId("test-one-more-client")->build();
 
-$client->createClient($representation);
+$id = $client->createClient($representation);
+
+$representation->defaultRoles = [
+    'hero', 'villan'
+];
+
+$client->updateClient($id, $representation);
