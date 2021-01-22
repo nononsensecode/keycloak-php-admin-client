@@ -73,7 +73,7 @@ class Client
         }
     }
 
-    public function getAccessToken(): AccessToken
+    private function getAccessToken(): AccessToken
     {
         $grantType = 'client_credentials';
         $accessTokenResponse = $this->http->post($this->accessTokenUri, [
