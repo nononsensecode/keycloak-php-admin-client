@@ -83,6 +83,13 @@ class ClientRepresentationBuilder
         $this->webOrigins = [];
     }
 
+    public function createPublicClient(string $clientId): ClientRepresentationBuilder
+    {
+        $this->publicClient = true;
+        $this->clientId = $clientId;
+        return $this;
+    }
+
     public function access($access): ClientRepresentationBuilder
     {
         $this->access = $access;

@@ -13,7 +13,6 @@ class Client
     private string $realm;
     private string $clientSecret;
     private string $accessTokenUri;
-    private string $clientManagementUri;
     private string $realmManagementClientId;
 
     function __construct()
@@ -25,18 +24,17 @@ class Client
         $this->realm = $_ENV['KEYCLOAK_REALM'];
         $this->clientSecret = $_ENV['KEYCLOAK_CLIENT_SECRET'];
         $this->accessTokenUri = $this->getAccessTokenUri();
-        $this->clientManagementUri = $this->getClientManagementUri();
         $this->realmManagementClientId = $_ENV['KEYCLOAK_REALM_MANAGEMENT_CLIENT_ID'];
     }
 
     public function createClient(ClientRepresentation $representation): ?string
     {
-        $jsonString = $this->getJsonString($representation);
+        $jsonString = json_encode($this->removeNulls($representation));
         $headers = [
             'Content-Type'  => 'application/json',
             'Authorization' => "Bearer {$this->getAccessToken()}",
         ];
-        $response = $this->http->post($this->clientManagementUri,
+        $response = $this->http->post($this->getClientManagementUri(null),
             [
                 'headers' => $headers,
                 'body'    => $jsonString
@@ -44,7 +42,7 @@ class Client
         if ($response->getStatusCode() != 201) {
             throw new RuntimeException("Client not created!");
         } else {
-            echo "Client created successfully";
+            echo "Client created successfully\n";
         }
 
         if (!empty($response->getHeader('Location'))) {
@@ -57,8 +55,8 @@ class Client
 
     public function updateClient(string $id, ClientRepresentation $representation)
     {
-        $updateUri = $this->getClientManagementUri() . "/{$id}";
-        $jsonString = $this->getJsonString($representation);
+        $updateUri = $this->getClientManagementUri($id);
+        $jsonString = json_encode($this->removeNulls($representation));
         $headers = [
             'Content-Type' => 'application/json',
             'Authorization' => "Bearer {$this->getAccessToken()}"
@@ -75,29 +73,60 @@ class Client
 
     public function addRoles($id, $roles)
     {
-        $updateUri = $this->getClientManagementUri() . "/{$id}";
+        $rolesUri = $this->getRolesManagmentUri($id, null);
         $headers = [
+            'Content-Type'  => 'application/json',
             'Authorization' => "Bearer {$this->getAccessToken()}"
         ];
-        $updatedResponse = $this->http->put($updateUri, [
-            'headers' => $headers,
-            'json' => [
-                'defaultRoles' => $roles
-            ]
-        ]);
-        if ($updatedResponse->getStatusCode() !== 204) {
-            throw new RuntimeException("Roles not added");
+        foreach($roles as $role)
+        {
+            $jsonString = json_encode($this->removeNulls($role));
+            $updatedResponse = $this->http->post($rolesUri, [
+                'headers' => $headers,
+                'body' => $jsonString
+            ]);
+            if ($updatedResponse->getStatusCode() !== 201) {
+                throw new RuntimeException("Role {$role->name} cannot be added");
+            }
+            echo "Role {$role->name} added successfully\n";
         }
     }
 
-    public function setRoles($id, $roles)
+    public function setRoles($id, $newRoles)
     {
-
+        $rolesUri = $this->getRolesManagmentUri($id, null);
+        $headers = [
+            'Authorization' => "Bearer {$this->getAccessToken()}"
+        ];
+        $rolesResponse = $this->http->get($rolesUri, ['headers' => $headers]);
+        $roles = json_decode($rolesResponse->getBody());
+        $roleNames = array_map(function($role) {
+            return $role->name;
+        }, $roles);
+        $this->removeRoles($id, $roleNames);
+        $this->addRoles($id, $newRoles);
     }
 
-    public function removeRoles($id, $roles)
+    public function removeRoles($id, $roleNames)
     {
-
+        foreach($roleNames as $roleName)
+        {
+            $rolesUri = $this->getRolesManagmentUri($id, $roleName);
+            $headers = [
+                'Authorization' => "Bearer {$this->getAccessToken()}"
+            ];
+            $roleResponse = $this->http->get($rolesUri, ['headers' => $headers]);
+            if ($roleResponse->getStatusCode() != 200)
+            {
+                throw new RuntimeException("Role {$roleName} does not exist!");
+            }
+            $deleteResponse = $this->http->delete($rolesUri, ['headers' => $headers]);
+            if ($deleteResponse->getStatusCode() != 204)
+            {
+                throw new RuntimeException("Role {$roleName} cannot be deleted");
+            }
+            echo "Role {$roleName} deleted successfully\n";
+        }
     }
 
     private function getAccessToken(): AccessToken
@@ -117,16 +146,20 @@ class Client
         return new AccessToken($accessTokenBody);
     }
 
-    private function getJsonString($jsonObject): string {
-        $object = (object) array_filter((array) $jsonObject);
-        return json_encode($object);
+    private function removeNulls($jsonObject): object    {
+        return (object) array_filter((array) $jsonObject);
     }
 
-    private function getClientManagementUri(): string {
-        return sprintf($_ENV['KEYCLOAK_CLIENT_MANAGEMENT_URI'], $this->realm);
+    private function getClientManagementUri(?string $id): string {
+        return sprintf($_ENV['KEYCLOAK_CLIENT_MANAGEMENT_URI'], $this->realm, $id);
     }
 
     private function getAccessTokenUri(): string {
         return sprintf($_ENV['KEYCLOAK_ACCESS_TOKEN_URI'], $this->realm);
+    }
+
+    private function getRolesManagmentUri(string $id, ?string $roleName)
+    {
+        return sprintf($_ENV['KEYCLOAK_ROLE_MGMT_URI'], $this->realm, $id, $roleName);
     }
 }
